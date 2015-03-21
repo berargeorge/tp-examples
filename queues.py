@@ -47,12 +47,15 @@ class Person:
 
 
 class Generator:
+    generation_no = 0
+
     def __init__(self, bankers, max_no):
         self.bankers = bankers
         self.max_no = max_no
 
     def generate(self):
         while Person.number < self.max_no:
+            Generator.generation_no = Generator.generation_no + 1
             p = Person()
             banker = self.bankers[Person.number % Banker.number_of_bankers]
             banker.q.put(p)
@@ -61,6 +64,15 @@ class Generator:
                   'has the current queue:' +
                   ", ".join([elem.name for elem in list(banker.q.queue)]))
             time.sleep(0.2)
+
+            # randomly open a new office at fourth iteration
+            if Generator.generation_no == 4:
+                b = Banker(Banker.number_of_bankers)
+                self.bankers.insert(Banker.number_of_bankers, b)
+                t = threading.Thread(target=b.do_banky_stuff)
+                # thread dies when main thread (only non-daemon thread) exits.
+                t.daemon = True
+                t.start()
 
 
 class Main:
