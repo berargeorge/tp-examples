@@ -60,10 +60,7 @@ class Generator:
             print("Banker no. " + str(banker.number) + ": " +
                   'has the current queue:' +
                   ", ".join([elem.name for elem in list(banker.q.queue)]))
-
-            # each q is blocked until all tasks are done
-            # for i in range(Banker.number_of_bankers):
-            #     self.bankers[i].q.join()
+            time.sleep(0.2)
 
 
 class Main:
