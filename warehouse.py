@@ -4,8 +4,7 @@ import pprint
 class Order:
     CREATED = 1
     IN_PROGRESS = 2
-    SENT = 3
-    COMPLETED = 4
+    COMPLETED = 3
 
     status_options = (
         (CREATED, 'CREATED'),
@@ -48,8 +47,10 @@ class OPDept:
         }
 
         for warehouse in OPDept.warehouses:
-            warehouse_report['total_products'] += warehouse.number_products()
-            if warehouse.under_stock():
+            no_prod = warehouse.number_products()
+            if no_prod:
+                warehouse_report['total_products'] += no_prod
+            else:
                 warehouse_report['zero_stock'] += 1
 
         order_report = {
@@ -70,6 +71,11 @@ class OPDept:
         pp.pprint(warehouse_report)
         pp.pprint(order_report)
 
+        return {
+            'warehouse_report': warehouse_report,
+            'order_report': order_report,
+        }
+
 
 class Customer:
     total_number = 0
@@ -83,6 +89,11 @@ class Customer:
         return OPDept.create_order(self, product)
 
     def receive_order(self, order):
+        if order.status is not Order.IN_PROGRESS:
+            raise InconsistentOrderException(
+                'I can not receive a product that was not yet sent'
+            )
+
         order.status = Order.COMPLETED
         return order
 
@@ -120,7 +131,15 @@ class Warehouse:
         return False
 
     def under_stock(self):
-        return not self.products
+        return self.number_products() == 0
 
     def number_products(self):
-        return len(self.products)
+        no = 0
+        for pid, stock in self.products.items():
+            no += int(self.products[pid])
+
+        return no
+
+
+class InconsistentOrderException(Exception):
+    pass
